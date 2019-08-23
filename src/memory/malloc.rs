@@ -274,13 +274,12 @@ mod test {
 
     #[test]
     fn test_cuda_device_limit() {
-        // enough to see it compiles
+        // not really a test - basically a helper to see whether it compiles or not
         let _context = crate::quick_init().unwrap();
         unsafe {
-            cuda_device_get_limit(cudaLimit_cudaLimitStackSize);
+            cuda_device_get_limit_stacksize();
         }
     }
-
 
     #[test]
     fn test_cuda_malloc() {
