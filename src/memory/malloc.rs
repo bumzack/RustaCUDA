@@ -7,6 +7,11 @@ use std::mem;
 use std::os::raw::c_void;
 use std::ptr;
 
+use cuda_sys::cudart;
+use cuda_sys::cudart::cudaLimit_cudaLimitStackSize;
+use cuda_sys::cudart::cudaLimit;
+
+
 /// Unsafe wrapper around the `cuMemAlloc` function, which allocates some device memory and
 /// returns a [`DevicePointer`](struct.DevicePointer.html) pointing to it. The memory is not cleared.
 ///
@@ -95,7 +100,7 @@ pub unsafe fn cuda_malloc_unified<T: DeviceCopy>(count: usize) -> CudaResult<Uni
         size,
         cuda::CUmemAttach_flags_enum::CU_MEM_ATTACH_GLOBAL as u32,
     )
-    .to_result()?;
+        .to_result()?;
     let ptr = ptr as *mut T;
     Ok(UnifiedPointer::wrap(ptr as *mut T))
 }
@@ -241,13 +246,41 @@ pub unsafe fn cuda_free_locked<T>(ptr: *mut T) -> CudaResult<()> {
     Ok(())
 }
 
+pub unsafe fn cuda_device_get_limit_stacksize() -> CudaResult<usize> {
+    let limit: cudaLimit = 0;
+    let mut p_value: usize = 0;
+    let res = cudart::cudaDeviceGetLimit(&mut p_value, cudaLimit_cudaLimitStackSize);
+
+    Ok(p_value)
+}
+
+pub unsafe fn cuda_device_set_limit_stacksize(size: usize) -> CudaResult<usize> {
+    let limit: cudaLimit = 0;
+    let mut p_value: usize = 0;
+    let res = cudart::cudaDeviceSetLimit(cudaLimit_cudaLimitStackSize, size);
+
+    Ok(p_value)
+}
+
+
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[derive(Clone, Debug)]
     struct ZeroSizedType;
+
     unsafe impl DeviceCopy for ZeroSizedType {}
+
+    #[test]
+    fn test_cuda_device_limit() {
+        // enough to see it compiles
+        let _context = crate::quick_init().unwrap();
+        unsafe {
+            cuda_device_get_limit(cudaLimit_cudaLimitStackSize);
+        }
+    }
+
 
     #[test]
     fn test_cuda_malloc() {
