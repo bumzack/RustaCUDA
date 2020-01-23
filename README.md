@@ -1,4 +1,4 @@
-Fork of  <a href="https://bheisler.github.io/RustaCUDA/rustacuda/index.html">RustaCUDA (master branch)</a>
+Fork of  <a href="https://github.com/bheisler/RustaCUDA">RustaCUDA (master branch)</a>
 
 ### Original RustaCUDA is maintained by Brook Heisler
 
