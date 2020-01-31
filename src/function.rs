@@ -411,6 +411,47 @@ macro_rules! launch {
     };
 }
 
+#[macro_export]
+macro_rules! launch_mul_new {
+    ($module:ident . $function:ident <<<$grid:expr, $block:expr, $shared:expr, $stream:ident>>>(  $arg1:expr,   $arg2:expr ,   $arg3:expr ,   $arg4:expr ,   $arg5:expr ,   $arg6:expr ,   $arg7:expr  )) => {
+        {
+            let name = std::ffi::CString::new(stringify!($function)).unwrap();
+            let function = $module.get_function(&name);
+            match function {
+                Ok(f) => launch!(f<<<$grid, $block, $shared, $stream>>>(  $arg1,   $arg2 ,  $arg3,   $arg4  ,   $arg5 ,  $arg6,   $arg7 )),
+                Err(e) => Err(e),
+            }
+        }
+    };
+    ($function:ident <<<$grid:expr, $block:expr, $shared:expr, $stream:ident>>>(  $arg1:expr,   $arg2:expr , $arg3:expr,   $arg4:expr, $arg5:expr , $arg6:expr,   $arg7:expr )) => {
+        {
+            fn assert_impl_devicecopy<T: $crate::memory::DeviceCopy>(_val: T) {};
+            if false {
+                $(
+                    assert_impl_devicecopy($arg);
+                )*
+            };
+
+            $stream.launch(&$function, $grid, $block, $shared,
+                &[
+                 $arg1 as *const _ * as *mut ::std::ffi::c_void,
+                 $arg2 as *const _ * as *const ::std::ffi::c_void,
+                 $arg3 as *const _ * as *const ::std::ffi::c_void,
+                 $arg4 as *const _ * as *const ::std::ffi::c_void,
+                 $arg5 as *const _ * as *const ::std::ffi::c_void,
+                 $arg6 as *const _ * as *const ::std::ffi::c_void,
+                 $arg7 as *const _ * as *const ::std::ffi::c_void
+
+//                    $(
+//                        &$arg as *const _ as *mut ::std::ffi::c_void,
+//                    )*
+                ]
+            )
+        }
+    };
+}
+
+
 #[cfg(test)]
 mod test {
     use super::*;

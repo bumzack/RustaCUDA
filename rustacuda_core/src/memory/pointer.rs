@@ -16,7 +16,24 @@ use core::ptr;
 #[repr(transparent)]
 #[derive(Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
 pub struct DevicePointer<T>(*mut T);
+pub struct DevicePointerConst<T>(*const T);
+
+unsafe impl<T> DeviceCopy for DevicePointerConst<T> {}
+
+impl<T> DevicePointerConst<T> {
+    pub fn null() -> Self {
+        unsafe { Self::wrap_const(ptr::null()) }
+    }
+
+    pub unsafe fn wrap_const(ptr: *const   T) -> Self {
+        DevicePointerConst(ptr)
+    }
+}
+
+
+
 unsafe impl<T> DeviceCopy for DevicePointer<T> {}
+
 impl<T> DevicePointer<T> {
     /// Returns a null device pointer.
     ///
@@ -46,6 +63,7 @@ impl<T> DevicePointer<T> {
     /// # let _context = rustacuda::quick_init().unwrap();
     /// use rustacuda::memory::*;
     /// use std::ptr;
+    /// use rustacuda_core::DevicePointer;
     /// unsafe {
     ///     let null : *mut u64 = ptr::null_mut();
     ///     assert!(DevicePointer::wrap(null).is_null());
@@ -98,6 +116,7 @@ impl<T> DevicePointer<T> {
     /// # let _context = rustacuda::quick_init().unwrap();
     /// use rustacuda::memory::*;
     /// use std::ptr;
+    /// use rustacuda_core::DevicePointer;
     /// unsafe {
     ///     let null : *mut u64 = ptr::null_mut();
     ///     assert!(DevicePointer::wrap(null).is_null());
@@ -213,8 +232,8 @@ impl<T> DevicePointer<T> {
     /// ```
     #[allow(clippy::should_implement_trait)]
     pub unsafe fn add(self, count: usize) -> Self
-    where
-        T: Sized,
+        where
+            T: Sized,
     {
         self.offset(count as isize)
     }
@@ -254,8 +273,8 @@ impl<T> DevicePointer<T> {
     /// }
     #[allow(clippy::should_implement_trait)]
     pub unsafe fn sub(self, count: usize) -> Self
-    where
-        T: Sized,
+        where
+            T: Sized,
     {
         self.offset((count as isize).wrapping_neg())
     }
@@ -286,8 +305,8 @@ impl<T> DevicePointer<T> {
     /// }
     /// ```
     pub fn wrapping_add(self, count: usize) -> Self
-    where
-        T: Sized,
+        where
+            T: Sized,
     {
         self.wrapping_offset(count as isize)
     }
@@ -318,12 +337,19 @@ impl<T> DevicePointer<T> {
     /// }
     /// ```
     pub fn wrapping_sub(self, count: usize) -> Self
-    where
-        T: Sized,
+        where
+            T: Sized,
     {
         self.wrapping_offset((count as isize).wrapping_neg())
     }
 }
+
+
+
+
+
+
+
 impl<T> fmt::Pointer for DevicePointer<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Pointer::fmt(&self.0, f)

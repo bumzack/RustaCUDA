@@ -13,6 +13,7 @@ use std::ops::{
 
 use std::os::raw::c_void;
 use std::slice::{self, Chunks, ChunksMut};
+use rustacuda_core::DevicePointerConst;
 
 /// Fixed-size device-side slice.
 #[derive(Debug)]
@@ -248,6 +249,10 @@ impl<T> DeviceSlice<T> {
     /// reallocate.
     pub fn as_device_ptr(&mut self) -> DevicePointer<T> {
         unsafe { DevicePointer::wrap(self.0.as_mut_ptr()) }
+    }
+
+    pub fn as_device_ptr_const(&self) -> DevicePointerConst<T> {
+        unsafe { DevicePointerConst::wrap_const(self.0.as_ptr()) }
     }
 
     /// Forms a slice from a `DevicePointer` and a length.
